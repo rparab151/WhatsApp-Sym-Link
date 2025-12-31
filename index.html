@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Chat on WhatsApp</title>
+
+    <!-- 🔧 EDIT THESE -->
+    <meta name="description" content="Start a WhatsApp chat" />
+    <script>
+      // Put your WhatsApp number in international format WITHOUT +, spaces, or dashes.
+      // Example (India): 919876543210
+      const WA_NUMBER = "91XXXXXXXXXX";
+
+      // Optional prefilled message (will be URL-encoded)
+      const PREFILL_MESSAGE = "Hi! I’d like to connect on WhatsApp.";
+
+      // Set to true if you want auto-redirect after a couple seconds
+      const AUTO_REDIRECT = true;
+
+      // Seconds before redirect
+      const REDIRECT_DELAY_SECONDS = 2;
+    </script>
+
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b0f14;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --btn: #22c55e;
+        --btnText: #052e16;
+        --border: rgba(255,255,255,0.12);
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1000px 600px at 30% 10%, rgba(34,197,94,0.25), transparent),
+                    radial-gradient(900px 600px at 70% 20%, rgba(59,130,246,0.18), transparent),
+                    var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .card {
+        width: min(520px, 100%);
+        background: rgba(17,24,39,0.92);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 22px 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      }
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0 0 16px 0;
+        color: var(--muted);
+        line-height: 1.45;
+        font-size: 14.5px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: var(--btn);
+        color: var(--btnText);
+        font-weight: 700;
+        border: 0;
+        cursor: pointer;
+        font-size: 15px;
+      }
+      .btn:active { transform: translateY(1px); }
+      .small {
+        margin-top: 12px;
+        font-size: 12.5px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .hint {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(0,0,0,0.18);
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .linkbtn {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="card">
+      <h1>Chat on WhatsApp</h1>
+      <p>
+        Tap the button below to open WhatsApp. This page hides the number from casual viewers
+        (your number is still used by WhatsApp to start the chat).
+      </p>
+
+      <button class="btn" id="waBtn" type="button">
+        <!-- Simple inline icon -->
+        <span aria-hidden="true">💬</span>
+        Open WhatsApp Chat
+      </button>
+
+      <div class="row">
+        <button class="linkbtn" id="copyBtn" type="button">Copy this page link</button>
+        <button class="linkbtn" id="fallbackBtn" type="button">Open in browser</button>
+      </div>
+
+      <div class="hint">
+        <div><strong>Tip:</strong> Replace <code>91XXXXXXXXXX</code> in the code with your real WhatsApp number (no +, spaces).</div>
+        <div style="margin-top:6px">Example: <code>919876543210</code></div>
+      </div>
+
+      <div class="small" id="status"></div>
+    </main>
+
+    <script>
+      // Build WhatsApp URL (works for mobile + desktop)
+      function buildWaUrl() {
+        const msg = encodeURIComponent(PREFILL_MESSAGE || "");
+        // wa.me is simplest. You can also use https://api.whatsapp.com/send?phone=...
+        return `https://wa.me/${WA_NUMBER}${msg ? `?text=${msg}` : ""}`;
+      }
+
+      function goWhatsApp() {
+        const url = buildWaUrl();
+        window.location.href = url;
+      }
+
+      const statusEl = document.getElementById("status");
+      const waBtn = document.getElementById("waBtn");
+      const fallbackBtn = document.getElementById("fallbackBtn");
+      const copyBtn = document.getElementById("copyBtn");
+
+      waBtn.addEventListener("click", goWhatsApp);
+      fallbackBtn.addEventListener("click", () => window.open(buildWaUrl(), "_blank"));
+
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          statusEl.textContent = "Link copied.";
+        } catch {
+          statusEl.textContent = "Couldn’t copy automatically. Copy from the address bar.";
+        }
+        setTimeout(() => (statusEl.textContent = ""), 2500);
+      });
+
+      // Optional auto-redirect
+      if (AUTO_REDIRECT) {
+        let remaining = REDIRECT_DELAY_SECONDS;
+        statusEl.textContent = `Redirecting to WhatsApp in ${remaining}s…`;
+        const timer = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(timer);
+            goWhatsApp();
+          } else {
+            statusEl.textContent = `Redirecting to WhatsApp in ${remaining}s…`;
+          }
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
